@@ -4,7 +4,7 @@
 The joint optimization of the sensor trajectory and 3D map is a crucial characteristic of Simultaneous Localization and Mapping (SLAM) systems. Modern 3D LiDARs now retain higher resolutions that enable the creation of point cloud images resembling those taken by conventional cameras. Nevertheless, the typical effective global refinement techniques employed for RGB-D sensors are not widely applied to LiDARs. This repo includes SLAM/BA photometric strategies that accounts for both RGB-D and LiDAR in the same way. Being purely photometric our approaches are completely free from data association.
 </p>
 
-<p>In this repo, we provide an <b>updated</b> version of <a href="https://github.com/digiamm/md_slam">MD-SLAM</a> (around 30Hz for RGBD and 50Hz for LiDAR) and our <b>new photometric BA</b> refinement.</p>
+<p>In this repo, we provide an <b>updated</b> version of <a href="https://github.com/digiamm/md_slam">MD-SLAM</a> and our <b>new photometric BA</b> refinement.</p>
 
 <h2>Data download</h2>
 
@@ -22,7 +22,7 @@ If you don't want to use our <b>[docker](https://github.com/digiamm/ba_md_slam/b
 
 <h2>CPU only version</h2>
 
-For a CUDA free version you can checkout to the branch `cpu`, however we don't plan to mantain it.
+This is the CPU version, CUDA is not required!
 
 <h1>MD-SLAM Multi-cue Direct SLAM</h1>
 
@@ -171,7 +171,7 @@ Generate a config file and modify this according to your specifics. After you ca
 rosrun md_slam trajrosbagcloud2srrg -c config/previously/generated -dr downsampling/rot -dt downsamling/trans -traj input/trajectory/tum input/rosbag
 ```
 
-Note that `dr` and `dt` are useful if the trajectory frequency input is very high, hence it may be required to be downsampled (otherwise it may not fit to GPU)
+Note that `dr` and `dt` are useful if the trajectory frequency input is very high, hence it may be required to be downsampled (otherwise it may not fit to RAM)
 
 <h2>Other utilies</h2>
 
