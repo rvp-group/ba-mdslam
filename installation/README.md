@@ -1,9 +1,9 @@
 <h1>Installation</h1>
 
 ## Install [CUDA](https://developer.nvidia.com/cuda-downloads) (tested versions 8, 9.1, 10.1)
-______
+
 ## Install [ROS Noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) on Ubuntu 20.04
-______
+
 
 Once CUDA and ROS are installed, run
 ``` 
