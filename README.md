@@ -1,6 +1,5 @@
-<h1>Bundle Adjusted Multi-cue Direct SLAM</h1>
+<h1>Photometric SLAM and Bundle Adjustment for RGB-D and LiDAR</h1>
 
-<<<<<<< HEAD
 <p> 
 The joint optimization of the sensor trajectory and 3D map is a crucial characteristic of Simultaneous Localization and Mapping (SLAM) systems. Modern 3D LiDARs now retain higher resolutions that enable the creation of point cloud images resembling those taken by conventional cameras. Nevertheless, the typical effective global refinement techniques employed for RGB-D sensors are not widely applied to LiDARs. This repo includes SLAM/BA photometric strategies that accounts for both RGB-D and LiDAR in the same way. Being purely photometric our approaches are completely free from data association.
 </p>
@@ -17,11 +16,6 @@ Before you locally install anything, bear in mind that you can use our <b>[docke
 
 
 <h2>Installation</h2>
-=======
-<!-- <h3 align="center">
-Photometric SLAM and BA for RGB-D and LiDAR in CUDA 
-</h3>
->>>>>>> 713b2f51fb594d3fcc4fd6a00af6c24f76c53932
 
 If you don't want to use our <b>[docker](https://github.com/digiamm/ba_md_slam/blob/main/docker/README.md)</b>, proceed [here]() and good luck! 
 
@@ -30,8 +24,6 @@ If you don't want to use our <b>[docker](https://github.com/digiamm/ba_md_slam/b
 
 For a CUDA free version you can checkout to the branch `cpu`, however we don't plan to mantain it.
 
-
-
 <h1>MD-SLAM Multi-cue Direct SLAM</h1>
 
 <p align="center">
@@ -39,7 +31,6 @@ For a CUDA free version you can checkout to the branch `cpu`, however we don't p
   <img src="assets/slam_lidar.gif" width="300" /> 
 </p>
 
-<<<<<<< HEAD
 <h2 name=run>Run MD-SLAM</h2>
 
 Run the pipeline
@@ -74,13 +65,6 @@ if set enables cerr and cout streams
 ```
 
 <h1>Photometric Bundle Adjustment</h1>
-=======
-
-<h3 align="center">
-<b>Photometric Bundle Adjustment</b> 
-</h3>
--->
->>>>>>> 713b2f51fb594d3fcc4fd6a00af6c24f76c53932
 
 <p align="center">
   <img src="assets/ba_rgbd.gif" width="300" />
