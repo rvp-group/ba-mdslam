@@ -206,17 +206,3 @@ If you use any of this code please cite our works:
 }
 ```
 
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-<p align="center">
-We will soon release an <b>updated</b> version of <a href="https://github.com/digiamm/md_slam">MD-SLAM</a> (around 30Hz for RGBD and 50Hz for LiDAR) and our <b>new photometric BA</b> refinement, both in CUDA. 
-A draft of our work including supplementary material is available here and from <a href="https://arxiv.org/abs/2303.16878">arXiv</a> .
-</p>
->>>>>>> 713b2f51fb594d3fcc4fd6a00af6c24f76c53932
-
