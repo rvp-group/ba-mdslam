@@ -37,7 +37,8 @@ RUN cd /catkin_ws/src && git clone https://gitlab.com/srrg-software/srrg2_solver
 RUN cd /catkin_ws/src/srrg2_solver && rm -rf srrg2_solver_gui srrg2_solver_star srrg2_solver_experiments srrg2_solver_calib_addons srrg2_solver_extras
 RUN . /opt/ros/noetic/setup.sh && cd /catkin_ws && catkin init && catkin build -DSRRG_ENABLE_CUDA=ON
 
-# run md slam without building 
+# clone md slam and build later 
+RUN echo .
 RUN cd /catkin_ws/src && git clone https://github.com/digiamm/ba_md_slam.git
 
 # enable gl viewer

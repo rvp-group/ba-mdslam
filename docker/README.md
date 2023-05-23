@@ -8,3 +8,10 @@ Once the image is built, run the docker image, specifying as argument the path t
 ```
 ./run path-to-dataset-folder
 ```
+
+Once you are inside the container, build our package
+```
+cd /catkin_ws/ && gpu_build
+```
+
+You are ready to go!
