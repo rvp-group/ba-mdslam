@@ -17,7 +17,7 @@ Before you locally install anything, bear in mind that you can use our <b>[docke
 
 <h2>Installation</h2>
 
-If you don't want to use our <b>[docker](https://github.com/digiamm/ba_md_slam/blob/main/docker/README.md)</b>, proceed [here]() and good luck! 
+If you don't want to use our <b>[docker](https://github.com/digiamm/ba_md_slam/blob/main/docker/README.md)</b>, proceed [here](https://github.com/digiamm/ba_md_slam/blob/main/installation/README.md) - good luck! 
 
 
 <h2>CPU only version</h2>
