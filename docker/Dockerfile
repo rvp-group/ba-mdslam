@@ -32,14 +32,11 @@ RUN cd /catkin_ws/src && git clone https://gitlab.com/srrg-software/srrg_cmake_m
 RUN cd /catkin_ws/src && git clone https://gitlab.com/srrg-software/srrg_hbst.git 
 RUN cd /catkin_ws/src && git clone https://gitlab.com/srrg-software/srrg2_core.git && cd srrg2_core && git checkout 9cc15007 
 RUN cd /catkin_ws/src && git clone https://gitlab.com/srrg-software/srrg2_solver.git && cd srrg2_solver && git checkout 4eb02cf8 
+RUN cd /catkin_ws/src && git clone https://github.com/digiamm/ba_md_slam.git && cd ba_md_slam && git checkout cpu
 
 # remove useless stuff from solver
 RUN cd /catkin_ws/src/srrg2_solver && rm -rf srrg2_solver_gui srrg2_solver_star srrg2_solver_experiments srrg2_solver_calib_addons srrg2_solver_extras
-RUN . /opt/ros/noetic/setup.sh && cd /catkin_ws && catkin init && catkin build -DSRRG_ENABLE_CUDA=ON
-
-# clone md slam and build later 
-RUN echo .
-RUN cd /catkin_ws/src && git clone https://github.com/digiamm/ba_md_slam.git
+RUN . /opt/ros/noetic/setup.sh && cd /catkin_ws && catkin init && catkin build 
 
 # enable gl viewer
 RUN apt-get update \
