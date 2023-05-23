@@ -1,0 +1,13 @@
+*.cproject
+*.project
+*.vscode
+*.settings/
+*.settings/*
+*/.settings/*
+*dataset*
+*~
+
+# md slam stuff
+*.bag
+*.boss
+*.d
