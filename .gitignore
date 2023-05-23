@@ -4,7 +4,6 @@
 *.settings/
 *.settings/*
 */.settings/*
-*dataset*
 *~
 
 # md slam stuff
