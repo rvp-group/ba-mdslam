@@ -1,33 +1,5 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
 #include "pyramid_generator.h"
-#include "utils.cuh"
+#include "utils.h"
 #include <srrg_messages/message_handlers/message_pack.h>
 #include <srrg_messages/messages/camera_info_message.h>
 #include <srrg_messages/messages/image_message.h>
@@ -41,15 +13,16 @@
 #include <unistd.h>
 
 namespace md_slam {
+  using namespace std;
   using namespace srrg2_core;
 
-  MDPyramidGenerator::MDPyramidGenerator() { //: _level_zero() {
+  MDPyramidGenerator::MDPyramidGenerator() {
     MDNormalComputator2DCrossProduct* comp =
       dynamic_cast<MDNormalComputator2DCrossProduct*>(param_normal_computator.value().get());
     comp->param_col_gap.setValue(3);
     comp->param_row_gap.setValue(3);
     comp->param_squared_max_distance.setValue(0.3);
-    param_scales.value() = std::vector<int>{2, 4, 8};
+    param_scales.value() = vector<int>{2, 4, 8};
   }
 
   MDPyramidGenerator::~MDPyramidGenerator() {
@@ -119,10 +92,13 @@ namespace md_slam {
     if (_scales_changed_flag && rows() == _normals.rows() && cols() == _normals.cols())
       return;
     _scales_changed_flag = false;
+
     _level_zero.resize(rows(), cols());
-    _level_zero.camera_matrix         = _camera_matrix_scaled;
-    _level_zero.camera_type           = _camera_type;
-    _level_zero.sensor_offset         = _sensor_offset;
+    _level_zero.camera_matrix = _camera_matrix_scaled;
+    _level_zero.camera_type   = _camera_type;
+    _level_zero.sensor_offset = _sensor_offset;
+    // std::cerr << "MDPyramidGenerator::allocatePyramids:\n"
+    //           << _level_zero.sensor_offset.matrix() << std::endl;
     _level_zero.min_depth             = param_min_depth.value();
     _level_zero.max_depth             = param_max_depth.value();
     _level_zero.policies[Intensity]   = (FilterPolicy) param_intensity_policy.value();
@@ -152,6 +128,7 @@ namespace md_slam {
     _cloud.resize(rows(), cols());
     _cloud.fill(PointNormalIntensity3f());
     _mask = (_depth == 0);
+
     _pyramid_msg.reset(new MDImagePyramidMessage);
     _pyramid_msg->set(new MDImagePyramid);
     MDImagePyramid* pyr_image = _pyramid_msg->get();
@@ -172,17 +149,17 @@ namespace md_slam {
     param_normal_computator.value()->computeNormals(_cloud);
 
     ImageVector3f tmp_normals(rows(), cols());
-    // if (param_adaptive_blur.value()) {
-    //   // smoothing normals based on depth
-    //   // TODO tune last values, shitty hardcoding
-    //   const ImageUInt8 _kernels = calculateKernelImg(_depth, param_min_depth.value(), 5, 10.f);
-    //   _cloud.copyRawFieldTo<1>(tmp_normals);
-    //   _normals = adaptiveNormalsSmoothing(tmp_normals, _kernels);
-    // } else {
-    // here static blurring
-    _cloud.copyRawFieldTo<1>(tmp_normals);
-    tmp_normals.blur(_normals, param_normals_blur_region_size.value());
-    // }
+    if (param_adaptive_blur.value()) {
+      // smoothing normals based on depth
+      // TODO tune last values, shitty hardcoding
+      const ImageUInt8 _kernels = calculateKernelImg(_depth, param_min_depth.value(), 5, 10.f);
+      _cloud.copyRawFieldTo<1>(tmp_normals);
+      _normals = adaptiveNormalsSmoothing(tmp_normals, _kernels);
+    } else {
+      // here static blurring
+      _cloud.copyRawFieldTo<1>(tmp_normals);
+      tmp_normals.blur(_normals, param_normals_blur_region_size.value());
+    }
     // zero the normals where undefined
     _cloud.copyRawFieldFrom<1>(_normals);
     _cloud.normalize<1>();
@@ -192,7 +169,6 @@ namespace md_slam {
 
     size_t num_levels = param_scales.size();
     _level_zero.fromCloud(_cloud);
-
     pyr_image->resize(num_levels);
     pyr_image->_relative_scales.resize(num_levels);
     // full resolution needed for closures
@@ -201,18 +177,16 @@ namespace md_slam {
     pyr_image->setCameraMatrix(_camera_matrix_original);
     pyr_image->setCameraType(_camera_type);
     pyr_image->setSensorOffset(_sensor_offset);
-
     for (size_t level_num = 0; level_num < num_levels; ++level_num) {
       const float& scale = param_scales.value(level_num);
       pyr_image->at(level_num).reset(new MDPyramidLevel);
       MDPyramidLevel& pyr = *pyr_image->at(level_num);
       _level_zero.scaleTo(pyr, scale);
-
       int relative_scale = 1;
       if (level_num > 0) {
         relative_scale = param_scales.value(level_num) / param_scales.value(0);
         if (param_scales.value(level_num) % param_scales.value(0)) {
-          throw std::runtime_error("MDPyramidGenerator::putMessage |  level num % scale[0] != 0");
+          cerr << "il male sia con te" << endl;
         }
       }
       pyr_image->_relative_scales[level_num] = relative_scale;
@@ -255,7 +229,7 @@ namespace md_slam {
       if (!platform()->getTransform(
             sensor_offset, intensity->frame_id.value(), param_base_frame_id.value())) {
         std::cerr << "MDPyramidGenerator::putMessage|waiting for transform "
-                  << param_base_frame_id.value() << " " << intensity->frame_id.value() << std::endl;
+                  << param_base_frame_id.value() << " " << intensity->frame_id.value() << endl;
         return false;
       } else {
         setSensorOffset(sensor_offset);
@@ -274,6 +248,9 @@ namespace md_slam {
           break;
         case Spherical:
           camera_info->projection_model.setValue("spherical");
+          // TODO embed this in dataset
+          camera_info->camera_matrix.value()(1, 1) *= -1;
+          camera_info->camera_matrix.value()(0, 0) *= -1;
           break;
         default:;
       }

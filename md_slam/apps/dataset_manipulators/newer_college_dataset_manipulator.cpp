@@ -1,31 +1,3 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
 #include <chrono>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -48,8 +20,8 @@
 
 #include "lidar_config_object.h"
 #include "manip_utils.h"
-#include <md_slam/instances.h>
-#include <md_slam/utils.cuh>
+#include "md_slam/instances.h"
+#include "md_slam/utils.h"
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;
@@ -68,23 +40,39 @@ int main(int argc, char** argv) {
   messages_ros_registerTypes();
   md_registerTypes();
 
-  BOSS_REGISTER_CLASS(MessageSortedSource);
-
-  // clang-format off
   ParseCommandLine cmd(argv, banner);
   ArgumentString config_filename(&cmd, "c", "config", "config file to read", "");
   ArgumentString output_rosbag(&cmd, "o", "output", "name of rosbag output", "");
   ArgumentFloat depth_scale(&cmd, "d", "depth-scale", "scaling factor for depth", 1e-2);
-  ArgumentString in_topic_imu(&cmd, "tiimu", "topic-in-imu", "name of imu topic used for reading", "/os_cloud_node/imu");
-  ArgumentString out_topic_intensity(&cmd, "toi", "topic-out-intensity", "name of topic intensity image to use for plumbing", "/os/image_intensity");
-  ArgumentString out_topic_depth(&cmd, "tod", "topic-out-depth", "name of topic depth image to use for plumbing", "/os/image_depth");
-  ArgumentString out_topic_imu(&cmd, "toimu", "topic-out-imu", "name of topic imu used for plumbing", "/os/imu");
-  ArgumentString out_topic_camera_info(&cmd, "tk", "topic-camera-info", "name of topic camera info used for plumbing ouster intrisincs data", "/os/camera_info");
+  ArgumentString in_topic_imu(
+    &cmd, "tiimu", "topic-in-imu", "name of imu topic used for reading", "/os_cloud_node/imu");
+  ArgumentString out_topic_intensity(&cmd,
+                                     "toi",
+                                     "topic-out-intensity",
+                                     "name of topic intensity image to use for plumbing",
+                                     "/os/image_intensity");
+  ArgumentString out_topic_depth(&cmd,
+                                 "tod",
+                                 "topic-out-depth",
+                                 "name of topic depth image to use for plumbing",
+                                 "/os/image_depth");
+  ArgumentString out_topic_imu(
+    &cmd, "toimu", "topic-out-imu", "name of topic imu used for plumbing", "/os/imu");
+  ArgumentString out_topic_camera_info(
+    &cmd,
+    "tk",
+    "topic-camera-info",
+    "name of topic camera info used for plumbing ouster intrisincs data",
+    "/os/camera_info");
   ArgumentString imu_frame_id(&cmd, "fimu", "frame-imu", "name of imu frame", "/os_imu");
   ArgumentString lidar_frame_id(&cmd, "flidar", "frame-lidar", "name of lidar frame", "/os_lidar");
-  ArgumentString input_configuration_filename(&cmd, "j", "write-configuration", "if output configuration set, write configuration to process dataset", "lidar_configuration.json");
+  ArgumentString input_configuration_filename(
+    &cmd,
+    "j",
+    "write-configuration",
+    "if output configuration set, write configuration to process dataset",
+    "lidar_configuration.json");
   cmd.parse();
-  // clang-format on
 
   ConfigurableManager manager;
 

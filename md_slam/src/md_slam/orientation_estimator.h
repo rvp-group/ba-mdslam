@@ -1,30 +1,3 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 #include <srrg_config/configurable.h>
@@ -42,15 +15,36 @@ namespace md_slam {
   class MDOrientationEstimator : public srrg2_core::Configurable {
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    MDOrientationEstimator() {
+    }
 
-    // clang-format off
-    PARAM(PropertyBool, estimate_bias, "if set to true estimate biases from gyroscope", true, nullptr);
-    PARAM(PropertyBool, calculate_adaptive_gain, "if set to true calculate gain adaptively", true, nullptr);
-    inline Matrix3d rotation() const { return _quat.toRotationMatrix(); }
-    inline const Quaterniond& quaternion() const { return _quat; }
-    inline const Vector3d& biasGyroscope() const { return _bias_gyro; }
-    inline void setRotation(const Matrix3d& rot_) { _quat = Quaterniond(rot_); }
-    // clang-format on
+    PARAM(PropertyBool,
+          estimate_bias,
+          "if set to true estimate biases from gyroscope",
+          true,
+          nullptr);
+
+    PARAM(PropertyBool,
+          calculate_adaptive_gain,
+          "if set to true calculate gain adaptively",
+          true,
+          nullptr);
+
+    inline Matrix3d rotation() const {
+      return _quat.toRotationMatrix();
+    }
+
+    inline const Quaterniond& quaternion() const {
+      return _quat;
+    }
+
+    inline const Vector3d& biasGyroscope() const {
+      return _bias_gyro;
+    }
+
+    inline void setRotation(const Matrix3d& rot_) {
+      _quat = Quaterniond(rot_);
+    }
 
     inline void reset() {
       _quat.setIdentity();
@@ -84,16 +78,16 @@ namespace md_slam {
       // the orientation of the Global frame wrt the Local frame with arbitrary yaw
       // (intermediary frame), quat_meas.z() is defined as 0
       const Vector3d n_acc = acc_.normalized();
-      if (n_acc.z() >= 0.0) {
+      if (n_acc.z() >= 0) {
         quat_meas.w() = sqrt((n_acc.z() + 1) * 0.5);
         quat_meas.x() = -n_acc.y() / (2.0 * quat_meas.w());
         quat_meas.y() = n_acc.x() / (2.0 * quat_meas.w());
-        quat_meas.z() = 0.0;
+        quat_meas.z() = 0;
       } else {
         const double X = sqrt((1 - n_acc.z()) * 0.5);
         quat_meas.w()  = -n_acc.y() / (2.0 * X);
         quat_meas.x()  = X;
-        quat_meas.y()  = 0.0;
+        quat_meas.y()  = 0;
         quat_meas.z()  = n_acc.x() / (2.0 * X);
       }
     }

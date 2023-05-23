@@ -1,31 +1,3 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
 #include "loop_validator.h"
 #include <srrg_geometry/permutation_sampler.cpp>
 
@@ -82,11 +54,11 @@ namespace md_slam_closures {
     return tmp_correspondences_.size();
   }
 
-  Isometry3f LoopValidator::solveLinear(const std::vector<Vector3f>& q_points,
-                                        const std::vector<Vector3f>& r_points,
-                                        const Vector3d& q_centroid_,
-                                        const Vector3d& r_centroid_,
-                                        const size_t& num_matches_) {
+  Isometry3f LoopValidator::_solveLinear(const std::vector<Vector3f>& q_points,
+                                         const std::vector<Vector3f>& r_points,
+                                         const Vector3d& q_centroid_,
+                                         const Vector3d& r_centroid_,
+                                         const size_t& num_matches_) {
     MatrixXd zigma = MatrixXd::Zero(3, 3);
     // add contribution of each point and get a shitty 3x3
     for (size_t i = 0; i < num_matches_; ++i) {
@@ -153,7 +125,7 @@ namespace md_slam_closures {
 
       // solve with svd and get transformation mat
       const Isometry3f current_estimate =
-        solveLinear(query_current, ref_current, query_centroid, ref_centroid, min_num_matches);
+        _solveLinear(query_current, ref_current, query_centroid, ref_centroid, min_num_matches);
 
       // transform reference cloud with estimate to find associations
       const Point3fVectorCloud ref_tmp = ref_cloud_.transform<Isometry>(current_estimate);
@@ -204,7 +176,7 @@ namespace md_slam_closures {
 
     // solve with svd and get transformation mat
     estimate_ =
-      solveLinear(query_current, ref_current, query_centroid, ref_centroid, tot_num_inliers);
+      _solveLinear(query_current, ref_current, query_centroid, ref_centroid, tot_num_inliers);
 
     // // transform reference cloud with estimate to find associations
     // const Point3fVectorCloud ref_tmp = ref_cloud_.transform<Isometry>(estimate_);

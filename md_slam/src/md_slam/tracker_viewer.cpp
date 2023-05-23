@@ -1,42 +1,15 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
 #include "tracker_viewer.h"
 #include <unistd.h>
 
 namespace md_slam {
   using namespace srrg2_core;
+  using namespace std;
 
   void MDTrackerViewer::voxelize() {
     ++_last_time_voxelize;
     if (_last_time_voxelize < param_voxelize_interval.value())
       return;
-    std::cerr << "voxelize " << globalCloud().size() << " -> ";
+    cerr << "voxelize " << globalCloud().size() << " -> ";
     std::back_insert_iterator<MDVectorCloud> out_vox(otherCloud());
     float cs = param_voxelize_coord_res.value();
     float ns = param_voxelize_normal_res.value();
@@ -46,7 +19,7 @@ namespace md_slam {
     ++_g_idx;
     otherCloud().clear();
     _last_time_voxelize = 0;
-    std::cerr << globalCloud().size() << std::endl;
+    cerr << globalCloud().size() << endl;
   }
 
   bool MDTrackerViewer::putMessage(srrg2_core::BaseSensorMessagePtr msg_) {
@@ -63,12 +36,12 @@ namespace md_slam {
         _pyramid_msg->timestamp.value() == _status_msg->timestamp.value()) {
       MDImagePyramid* current = _pyramid_msg->get();
       if (!current) {
-        std::cerr << "! current" << std::endl;
+        cerr << "! current" << endl;
         return false;
       }
       MDMatrixCloud cloud;
-      // current->front()->toCloud(cloud);
-      // addCloud(cloud, _status_msg->global_pose.value(), _status_msg->is_keyframe.value());
+      current->front()->toCloud(cloud);
+      addCloud(cloud, _status_msg->global_pose.value(), _status_msg->is_keyframe.value());
       return true;
     }
     return false;
@@ -78,7 +51,7 @@ namespace md_slam {
   MDTrackerViewer::addCloud(const MDMatrixCloud& cloud, const Isometry3f& iso, bool is_keyframe) {
     _current_cloud.clear();
     std::back_insert_iterator<MDVectorCloud> out_current(_current_cloud);
-    // cloud.copyTo(out_current);
+    cloud.copyTo(out_current);
     _current_pose = iso;
     _current_cloud.transformInPlace<TRANSFORM_CLASS::Isometry>(iso);
     if (!is_keyframe)

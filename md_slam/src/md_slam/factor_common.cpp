@@ -1,39 +1,14 @@
-// Copyright 2022 Luca Di Giammarino
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors
-//    may be used to endorse or promote products derived from this software
-//    without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
-#include "factor_common.cuh"
-// #include <md_slam/utils.cuh>
+#include "factor.h"
+#include <md_slam/utils.h>
 #include <srrg_solver/solver_core/solver.h>
 #include <srrg_system_utils/chrono.h>
 
 namespace md_slam {
 
+  using namespace std;
   using namespace srrg2_core;
+
+  // thread_local MDFactorCommon::Workspace MDFactorCommon::_workspace;
 
   MDFactorCommon::MDFactorCommon() {
     _rows                 = 0;
@@ -44,16 +19,13 @@ namespace md_slam {
     _omega_depth_sqrt     = 0.f;
     _omega_normals_sqrt   = 0.f;
     _camera_type          = CameraType::Pinhole;
-    _camera_matrix.setIdentity();
     _sensor_offset_rotation_inverse.setIdentity();
     _sensor_offset_inverse.setIdentity();
-    _SX.setIdentity();
-    _cloud     = new MDMatrixCloud();
-    _workspace = new Workspace();
+    _camera_matrix.setIdentity();
   }
 
-  void MDFactorCommon::setFixed(const MDPyramidLevel* pyramid_level_) {
-    _level_ptr                      = pyramid_level_;
+  void MDFactorCommon::setFixed(const MDPyramidLevel& pyramid_level_) {
+    _level_ptr                      = &pyramid_level_;
     _rows                           = _level_ptr->rows();
     _cols                           = _level_ptr->cols();
     _min_depth                      = _level_ptr->min_depth;
@@ -66,12 +38,71 @@ namespace md_slam {
 
   void MDFactorCommon::setMoving(const MDPyramidLevel& pyramid_level_) {
     // inverse projection
-    pyramid_level_.toCloudDevice(_cloud);
+    pyramid_level_.toCloud(_cloud);
   }
 
   void MDFactorCommon::setMovingInFixedEstimate(const Isometry3f& X) {
     _SX        = _sensor_offset_inverse * X;
     _neg2rotSX = -2.f * _SX.linear();
+  }
+
+  void MDFactorCommon::computeProjections() {
+    Chrono t_proj("projections", &timings, false);
+    _workspace.reset(new Workspace);
+    _workspace->resize(_rows, _cols);
+    _workspace->fill(WorkspaceEntry());
+
+    size_t i = 0;
+    for (MDMatrixCloud::const_iterator it = _cloud.begin(); it != _cloud.end(); ++it, ++i) {
+      const PointNormalIntensity3f& full_point = *it;
+      const Vector3f& point                    = full_point.coordinates();
+      const Vector3f& normal                   = full_point.normal();
+      const float intensity                    = full_point.intensity();
+      const Vector3f transformed_point         = _SX * point;
+
+      float depth           = 0.f;
+      Vector3f camera_point = Vector3f::Zero();
+      Vector2f image_point  = Vector2f::Zero();
+
+      const bool& is_good = project(image_point,
+                                    camera_point,
+                                    depth,
+                                    transformed_point,
+                                    _camera_type,
+                                    _camera_matrix,
+                                    _min_depth,
+                                    _max_depth);
+      if (!is_good)
+        continue;
+
+      const int irow = cvRound(image_point.y());
+      const int icol = cvRound(image_point.x());
+
+      if (!_workspace->inside(irow, icol)) {
+        continue;
+      }
+
+      // check if masked
+      if (_level_ptr->matrix.at(irow, icol).masked()) {
+        continue;
+      }
+
+      WorkspaceEntry& entry = (*_workspace)(irow, icol);
+
+      if (depth > entry.depth())
+        continue;
+
+      const Vector3f rn = _SX.linear() * normal;
+      entry._prediction << intensity, depth, rn.x(), rn.y(), rn.z();
+      entry._point             = point;
+      entry._normal            = normal;
+      entry._transformed_point = transformed_point;
+      entry._camera_point      = camera_point;
+      entry._image_point       = image_point;
+      entry._index             = i;
+      entry._chi               = 0;
+      entry._status            = Good;
+    }
   }
 
   void MDFactorCommon::toTiledImage(ImageVector3f& canvas) const {

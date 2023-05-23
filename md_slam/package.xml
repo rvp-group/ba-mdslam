@@ -5,7 +5,6 @@
   <description>MD-SLAM: Multi-cue direct SLAM</description>
   <maintainer email="digiammarino@diag.uniroma1.it">Luca Di Giammarino</maintainer>
   <maintainer email="brizi@diag.uniroma1.it">Leonardo Brizi</maintainer>
-  <maintainer email="giacomini@diag.uniroma1.it">Emanuele Giacomini</maintainer>
   <license>BSD-4</license>
 
   <buildtool_depend>catkin</buildtool_depend>
