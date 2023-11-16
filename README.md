@@ -4,7 +4,7 @@
 The joint optimization of the sensor trajectory and 3D map is a crucial characteristic of Simultaneous Localization and Mapping (SLAM) systems. Modern 3D LiDARs now retain higher resolutions that enable the creation of point cloud images resembling those taken by conventional cameras. Nevertheless, the typical effective global refinement techniques employed for RGB-D sensors are not widely applied to LiDARs. This repo includes SLAM/BA photometric strategies that accounts for both RGB-D and LiDAR in the same way. Being purely photometric our approaches are completely free from data association.
 </p>
 
-<p>In this repo, we provide an <b>updated</b> version of <a href="https://github.com/digiamm/md_slam">MD-SLAM</a> (around 30Hz for RGBD and 50Hz for LiDAR) and our <b>new photometric BA</b> refinement.</p>
+<p>In this repo, we provide an <b>updated</b> version of <a href="https://github.com/srrg-sapienza/md_slam">MD-SLAM</a> (around 30Hz for RGBD and 50Hz for LiDAR) and our <b>new photometric BA</b> refinement.</p>
 
 <h2>Data download</h2>
 
